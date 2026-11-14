@@ -12,7 +12,7 @@ before publication.
 
 | Advisory | Product | Type | CVSS 3.1 | Auth |
 |---|---|---|---|---|
-| [wizard-apply-preauth-command-injection](linksys-e5350/01-wizard-apply-preauth-command-injection) | Linksys E5350 V1.0.00.037 | OS Command Injection (CWE-78 / CWE-306) | 8.8 | none (factory state) |
+| [CVE-2026-121932](linksys-e5350/01-wizard-apply-preauth-command-injection) | Linksys E5350 V1.0.00.037 | OS Command Injection (CWE-78 / CWE-306) | 9.4 | none (factory state) |
 | [websocket-diagnostic-command-injection](fanvil-v64/01-websocket-diagnostic-command-injection) | Fanvil V64 v2.12.17.7 | OS Command Injection (CWE-78) | 8.8 | none |
 | [websocket-diagnostic-command-injection](fanvil-i16s/01-websocket-diagnostic-command-injection) | Fanvil i16S V0.2.2-2.12.19 | OS Command Injection (CWE-78) | 8.8 | none |
 | [gps-cgi-query-string-overflow](blackvue-k970x-plus/01-gps-cgi-query-string-overflow) | BlackVue K970X Plus v1.003 | Stack Buffer Overflow (CWE-121) | 8.8 | none |
