@@ -1,4 +1,4 @@
-# [CVE-TBD] Linksys E5350 V1.0.00.037 Missing Authentication / OS Command Injection (CWE-306 / CWE-78)
+# [CVE-2026-121932] Linksys E5350 V1.0.00.037 Missing Authentication / OS Command Injection (CWE-306 / CWE-78)
 
 ## VulDB Submission Fields
 
