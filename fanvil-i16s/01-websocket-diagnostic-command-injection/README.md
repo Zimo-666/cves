@@ -10,25 +10,7 @@
 - Description:
 
 ```
-An OS command injection vulnerability was discovered in Fanvil i16S firmware V0.2.2-2.12.19.
-The "Rapid Logic/1.1" HTTP server embedded in /customer/bin/I10V exposes the WebSocket
-diagnostic endpoints /Ping and /Traceroute without any authentication: a GET request that
-carries the WebSocket upgrade headers and no cookie is answered with HTTP/1.1 101 Switching
-Protocols. The first text frame is used as the diagnostic target address and is validated by
-uStrIsValidIPOrDomain() (libplatform_utils.so: uParaUrlParse() plus POSIX regular
-expressions), which accepts a newline (0x0A) because the value is only checked as a bare URL
-authority and not as a shell token. The unchecked value is then formatted with
-snprintf(buf, 0x40, "traceroute %s ") in netTracerouteTask() (and with
-snprintf(buf, 0x40, "ping %s -c 10 -W 1") in netPingTask()) and passed to popen(), i.e. to
-/bin/sh -c. The newline therefore terminates the intended traceroute command and everything
-after it is executed by the shell. I10V is started as root from /customer/demo.sh during
-boot, so the injected commands run with root privileges and no credentials are required.
-Reproduction: open an unauthenticated WebSocket to ws://<device>/Traceroute and send the
-text frame "127.0.0.1\nid"; the server streams back the traceroute output followed by
-"uid=0(root) gid=0(root) groups=0(root)".
-Any host that can reach the device web interface obtains root command execution with a
-single unauthenticated request; no user interaction or configuration is required.
-Proposed CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H (8.8).
+An OS command injection vulnerability was discovered in Fanvil i16S firmware V0.2.2-2.12.19. The "Rapid Logic/1.1" HTTP server embedded in /customer/bin/I10V exposes the WebSocket diagnostic endpoints /Ping and /Traceroute without any authentication: a GET request that carries the WebSocket upgrade headers and no cookie is answered with HTTP/1.1 101 Switching Protocols. The first text frame is used as the diagnostic target address and is validated by uStrIsValidIPOrDomain() (libplatform_utils.so: uParaUrlParse() plus POSIX regular expressions), which accepts a newline (0x0A) because the value is only checked as a bare URL authority and not as a shell token. The unchecked value is then formatted with snprintf(buf, 0x40, "traceroute %s ") in netTracerouteTask() (and with snprintf(buf, 0x40, "ping %s -c 10 -W 1") in netPingTask()) and passed to popen(), i.e. to /bin/sh -c. The newline therefore terminates the intended traceroute command and everything after it is executed by the shell. I10V is started as root from /customer/demo.sh during boot, so the injected commands run with root privileges and no credentials are required. Reproduction: open an unauthenticated WebSocket to ws://<device>/Traceroute and send the text frame "127.0.0.1\nid"; the server streams back the traceroute output followed by "uid=0(root) gid=0(root) groups=0(root)". Any host that can reach the device web interface obtains root command execution with a single unauthenticated request; no user interaction or configuration is required. Proposed CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H (8.8).
 ```
 
 ---
