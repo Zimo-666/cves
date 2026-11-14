@@ -10,23 +10,7 @@
 - Description:
 
 ```
-An OS command injection vulnerability was discovered in Fanvil V64 firmware v2.12.17.7.
-The embedded "Rapid Logic" HTTP server of the phone exposes the WebSocket diagnostic
-endpoints /Ping and /Traceroute without any authentication. The text frame payload is
-treated as the diagnostic target address and is validated by a URL-parser based check
-(function 0x00389d9c -> uParaUrlParse) that only expects a bare URL authority; a newline
-character (0x0A) passes this check, and the unchecked string is then formatted with
-snprintf(buf, 0x30, "traceroute %s ", target) and passed to popen(), i.e. to
-"/bin/sh -c". The newline therefore terminates the intended traceroute command and
-everything after it is executed as a shell command. The XGUI process that owns this
-HTTP server is started as root by /customer/x_app_init.sh during boot, so the injected
-commands run with root privileges and no credentials are required.
-Reproduction: open an unauthenticated WebSocket to ws://<phone>/Traceroute and send the
-text frame "x\nid" - the server returns the output of id through the WebSocket; sending
-"x\nnc -l -p 4711 -e sh" makes the phone listen on TCP/4711 with a root shell.
-Any host that can reach the phone's web interface obtains root command execution with a
-single unauthenticated request; no user interaction or configuration is required.
-Proposed CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H (8.8).
+An OS command injection vulnerability was discovered in Fanvil V64 firmware v2.12.17.7. The embedded "Rapid Logic" HTTP server of the phone exposes the WebSocket diagnostic endpoints /Ping and /Traceroute without any authentication. The text frame payload is treated as the diagnostic target address and is validated by a URL-parser based check (function 0x00389d9c -> uParaUrlParse) that only expects a bare URL authority; a newline character (0x0A) passes this check, and the unchecked string is then formatted with snprintf(buf, 0x30, "traceroute %s ", target) and passed to popen(), i.e. to "/bin/sh -c". The newline therefore terminates the intended traceroute command and everything after it is executed as a shell command. The XGUI process that owns this HTTP server is started as root by /customer/x_app_init.sh during boot, so the injected commands run with root privileges and no credentials are required. Reproduction: open an unauthenticated WebSocket to ws://<phone>/Traceroute and send the text frame "x\nid" - the server returns the output of id through the WebSocket; sending "x\nnc -l -p 4711 -e sh" makes the phone listen on TCP/4711 with a root shell. Any host that can reach the phone's web interface obtains root command execution with a single unauthenticated request; no user interaction or configuration is required. Proposed CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H (8.8).
 ```
 
 ---
